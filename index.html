@@ -86,7 +86,17 @@ slideContainer[0].ontouchmove = function(e){//手指在屏幕滑动
 	if(isTouchEnd){return};
 	// e.preventDefault();
 	endX = e.touches[0].pageX;
+	if(endX>slideContainer_W){
+		endX = slideContainer_W;
+	}else if(endX < 0){
+		endX = 0;
+	}
+
 	slideX = endX - startX;
+	if(Math.abs(slideX)>slideLists_W){
+		slideX = direct=='left' ? -slideLists_W : slideLists_W; 
+	}
+	console.log(endX,slideX,startX)
 	direct = direction(slideX);
 	slideX0 = slideX;
 	slideX1 = slideX * (slideContainer_W*0.6/slideLists_W);
