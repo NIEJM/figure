@@ -13,14 +13,16 @@
 			<li>2</li>
 			<li>3</li>
 			<li>4</li>
+			<li>5</li>
+
 		</ul>
 	</div>
 <script>
 var slideContainer = document.getElementsByClassName('slideContainer');
-var slideContainer_W = slideContainer[0].clientWidth;
-var slideLis = slideContainer[0].getElementsByTagName('li');
+var slideContainer_W = slideContainer[0].clientWidth;//页面宽度
+var slideLis = slideContainer[0].getElementsByTagName('li');//图片集
 var slideUl = document.getElementsByClassName('slideLists');
-var slideLists_W = slideLis[0].clientWidth;
+var slideLists_W = slideLis[0].clientWidth;//每个图片的宽度
 console.log(slideLists_W,slideContainer_W);
 slideUl[0].style.left = 0 + 'px';
 var time=100,animated=false,interval=10,pre=0,show=0,next=0,animated=false;
@@ -34,7 +36,7 @@ for(var i=0;i<slideLis.length;i++){
 		slideLis[i].style.left = slideContainer_W + 'px';
 	}
 }
-function slideRun(el,offset){
+function slideRun(el,offset){//动画运行
 	var slideUlLeft = parseFloat(el.style.left);
 	var speed = offset/(time/interval);
 	var slideUlNowL = slideUlLeft + offset;
@@ -54,158 +56,162 @@ function slideRun(el,offset){
 	}
 	slideAnimate();
 }
-var startX = 0,endX=0,slideX=0,
-	slideX0=0,slideX1=0,slideX2=0,
-	currentslideX=0,currentslideX1=0,
-	currentslideX2=0,isTouchEnd=true,
-	isMove=false,currentslideX3=0,currentslideX0=0;
+var startX = 0,endX=0,slideX=0,startArray = [],endArray=[],
+	slideX0=0,slideX1=0,slideX2=0,direct,
+	isTouchEnd=true,isMove=false;
 document.ontouchstart = function(e){//手指触摸屏幕
-	if(isTouchEnd){
-		var e = e || window.e;
+	var e = e || window.e;
+	if(isTouchEnd && e.touches.length ==1){
 		startX = e.touches[0].pageX;
-		show = startX < slideLists_W ? e.target.index : e.target.index -1;
-		if(show==slideLis.length-2){
-			currentslideX1 = parseFloat(slideLis[show].style.left);
-			currentslideX2 = parseFloat(slideLis[show+1].style.left);
-		}else if(show == slideLis.length-1){
-			currentslideX1 = parseFloat(slideLis[show].style.left);
-		}else if(show>0){
-			currentslideX0 = parseFloat(slideLis[show-1].style.left);
-		}else{
-			currentslideX1 = parseFloat(slideLis[show].style.left);
-			currentslideX2 = parseFloat(slideLis[show+1].style.left);
-			currentslideX3 = parseFloat(slideLis[show+2].style.left);
-		}
-
+		showIndex(startX,e);
+		startArray = getLeft();
+		// console.log(startArray,1);
 		isTouchEnd=false;
 		isMove = false;
 	}
-
+}
+function showIndex(startX,e){//获取当前页面的序列号的值
+	show = startX < slideLists_W ? e.target.index : e.target.index -1;
+}
+function getLeft(){//获取所有图片的当前偏移值
+	var leftArray = [];
+	for(var i=0;i<slideLis.length;i++){
+		leftArray.push(parseFloat(slideLis[i].style.left));
+	}
+	return leftArray;
 }
 
 document.ontouchmove = function(e){//手指在屏幕滑动
 	var e = e || window.e;
-	e.preventDefault();
-	if(isTouchEnd){return;}
+	if(isTouchEnd){return};
+	// e.preventDefault();
 	endX = e.touches[0].pageX;
 	slideX = endX - startX;
-	if(slideX<0){//左滑
-		if(startX > currentslideX2){
-			slideX0 = slideX*(slideLists_W/startX);
-			slideX1 = slideX*(currentslideX2/startX);
-			slideX2 = slideX*(slideContainer_W*0.4/startX);
-		}else{
-			slideX0 = slideX;
-			slideX1 = slideX*0.8;
-			slideX2 = slideX*0.6;
-		}
-		if(show >= slideLis.length-2 && show != slideLis.length-1 ){
-			slideLis[show].style.left = currentslideX1 + slideX0 + 'px';
-			slideLis[show+1].style.left = currentslideX2 + slideX1 + 'px';
-		}else if(show == slideLis.length-1){
-				slideLis[show].style.left = currentslideX1 + slideX0 + 'px';
-		}else{
-			slideLis[show].style.left = currentslideX1 + slideX0 + 'px';
-			slideLis[show+1].style.left = currentslideX2 + slideX1 + 'px';
-			slideLis[show+2].style.left = currentslideX3 + slideX2 + 'px';
-		}
-		if(show>0){
-			slideLis[show-1].style.left = currentslideX0 + slideX + 'px';
-		}
-	}else{//右滑
-		if(startX > currentslideX2){
-			slideX0 = slideX*(slideLists_W/startX);
-			slideX1 = slideX*(currentslideX2/startX);
-			slideX2 = slideX*(slideContainer_W*0.4/startX);
-		}else{
-			slideX0 = slideX;
-			slideX1 = slideX*0.8;
-			slideX2 = slideX*0.6;
-		}
-		if(show == slideLis.length-1){
-			slideLis[show-1].style.left = currentslideX0 + slideX + 'px';
-			slideLis[show].style.left = currentslideX1 + slideX1 + 'px';
-		}else{
-			slideLis[show-1].style.left = currentslideX0 + slideX + 'px';
-			slideLis[show].style.left = currentslideX1 + slideX1 + 'px';
-			slideLis[show+1].style.left = currentslideX2 + slideX2 + 'px';
-		}
-		console.log(slideX,slideX1);
-		
-	}
-	isMove=true;
+	direct = direction(slideX);
+	slideX0 = slideX;
+	slideX1 = slideX * (slideContainer_W*0.6/slideLists_W);
+	slideX2 = slideX * (slideContainer_W*0.4/slideLists_W);
 
+	// console.log(slideX);
+	if(direct == 'left'){
+		switch(show){
+			case slideLis.length-1:
+			slideLeft(slideLis[show],slideX0,startArray[show]);
+			break;
+			case slideLis.length-2:
+			slideLeft(slideLis[show],slideX0,startArray[show]);
+			slideLeft(slideLis[show+1],slideX1,startArray[show+1]);
+			break;
+			default:console.log(slideX0);
+			slideLeft(slideLis[show],slideX0,startArray[show]);
+			slideLeft(slideLis[show+1],slideX1,startArray[show+1]);
+			slideLeft(slideLis[show+2],slideX2,startArray[show+2]);
+			break;
+		}
+	}else if(direct == 'right'){
+		switch(show){
+			case 0:
+			slideLeft(slideLis[show],slideX1,startArray[show]);
+			slideLeft(slideLis[show+1],slideX2,startArray[show+1]);
+			break;
+			case slideLis.length-1:
+			slideLeft(slideLis[show-1],slideX0,startArray[show-1]);
+			slideLeft(slideLis[show],slideX1,startArray[show]);
+			break;
+			default:
+			slideLeft(slideLis[show-1],slideX0,startArray[show-1]);
+			slideLeft(slideLis[show],slideX1,startArray[show]);
+			slideLeft(slideLis[show+1],slideX2,startArray[show+1]);
+			break;
+		}
+	}
+	isMove = true;
 	
+}
+
+function direction(slideX){//获取当前的滑动的方向
+	var direct;
+	return direct = slideX<0 ? 'left' : 'right';
+}
+
+function slideLeft(el,moveLeft,nowLeft){//手指滑动时，页面也跟随滑动
+	el.style.left = nowLeft + moveLeft + "px";
 }
 
 document.ontouchend = function(e){//手指离开屏幕
 	var e = e || window.e;
 	if(isMove && !isTouchEnd){
-		isTouchEnd = true;
-		isMove = false;
-		if(Math.abs(slideX)<slideLists_W*0.3){
-			if(show>0){
-				slideRun(slideLis[show-1],-slideX);
-			}
-			console.log('666 :'+slideX0,slideX1);
-			if(show == slideLis.length-2){console.log('-11');
-				if(slideX>0){
-					slideRun(slideLis[show],-slideX1);
-					slideRun(slideLis[show+1],-slideX2);
-				}else{
-					slideRun(slideLis[show],-slideX0);
-					slideRun(slideLis[show+1],-slideX1);
-				}
-				
-			}else if(show == slideLis.length-1){console.log('99')
-				slideRun(slideLis[show],-slideX0);
-			}else if(show==1){
-				slideRun(slideLis[show],-slideX0);
-				slideRun(slideLis[show+1],-slideX1);
-			}else{
-				slideRun(slideLis[show],-slideX0);
-				slideRun(slideLis[show+1],-slideX1);
-				slideRun(slideLis[show+2],-slideX2);		
+		changeLeft();
+		endArray = getLeft();
+		if(Math.abs(slideX)<slideContainer_W*0.3){
+			switch(show){
+				case 0:direct == 'left' ?
+				(slideRun(slideLis[show],-slideX0),
+				slideRun(slideLis[show+1],-slideX1),
+				slideRun(slideLis[show+2],-slideX2))
+				:(slideRun(slideLis[show],-slideX1),
+				slideRun(slideLis[show+1],-slideX2))
+				break;
+				case slideLis.length-1:direct == 'left' ?
+				(slideRun(slideLis[show],-slideX0))
+				:(slideRun(slideLis[show-1],-slideX0),
+				slideRun(slideLis[show],-slideX1))
+				break;
+				default:direct == 'left' ?
+				(slideRun(slideLis[show],-slideX0),
+				slideRun(slideLis[show+1],-slideX1),
+				slideRun(slideLis[show+2],-slideX2))
+				:(slideRun(slideLis[show-1],-slideX0),
+				slideRun(slideLis[show],-slideX1),
+				slideRun(slideLis[show+1],-slideX2))
+				break;
 			}
 		}else{
-			if(slideX<0){
-				if(show>0){
-					slideRun(slideLis[show-1],-slideX);
-				}
-				if(show >= slideLis.length-2 && show != slideLis.length-1){
-					slideRun(slideLis[show],-slideLists_W-slideX0);
-					slideRun(slideLis[show+1],-(slideContainer_W*0.6)-slideX1);
-				}else if(show == slideLis.length-1){console.log('3')
+			if(direct == 'left'){
+				switch(show){
+					case slideLis.length-1:
 					slideRun(slideLis[show],-slideX0);
-				}else{
+					break;
+					case slideLis.length-2:
 					slideRun(slideLis[show],-slideLists_W-slideX0);
-					slideRun(slideLis[show+1],-(slideContainer_W*0.6)-slideX1);
-					slideRun(slideLis[show+2],-(slideContainer_W*0.4)-slideX2);
+					slideRun(slideLis[show+1],-slideContainer_W*0.6-slideX1);
+					break;
+					default:console.log(-slideLists_W-slideX0);
+					slideRun(slideLis[show],-slideLists_W-slideX0);
+					slideRun(slideLis[show+1],-slideContainer_W*0.6-slideX1);
+					slideRun(slideLis[show+2],-slideContainer_W*0.4-slideX2);
+					break;
+				}
+			}else if(direct == 'right'){
+				switch(show){
+					case 0:
+					slideRun(slideLis[show],-slideX1);
+					slideRun(slideLis[show+1],-slideX2);
+					break;
+					case slideLis.length-1:
+					slideRun(slideLis[show-1],slideLists_W-slideX0);
+					slideRun(slideLis[show],slideContainer_W*0.6-slideX1);
+					break;
+					default:
+					slideRun(slideLis[show-1],slideLists_W-slideX0);
+					slideRun(slideLis[show],slideContainer_W*0.6-slideX1);
+					slideRun(slideLis[show+1],slideContainer_W*0.4-slideX2);
+					break;
 				}	
-			}else{
-				// if(show<slideLis.length-1){
-				// 	slideRun(slideLis[show+1],-slideX);
-				// }
-				console.log(slideX0,(slideContainer_W*0.6)-slideX1,slideLists_W-slideX0);
-				slideRun(slideLis[show-1],slideLists_W-slideX0);
-				slideRun(slideLis[show],(slideContainer_W*0.6)-slideX1);
-				
-				slideRun(slideLis[show+1],(slideContainer_W*0.4)-slideX2);
 			}
-
-
-
 		}
-
-		show=0;
 	}
-	
+	isTouchEnd = true;
 }
-
-
-
-
-
+function changeLeft(){//调整所有图片的偏移位置
+	for(var i=0;i<slideLis.length;i++){
+		if(parseFloat(slideLis[i].style.left)<=-slideLists_W){
+			slideLis[i].style.left = -slideLists_W + 'px';
+		}else if(parseFloat(slideLis[i].style.left)>=slideContainer_W){
+			slideLis[i].style.left = slideContainer_W + 'px';
+		}
+	}
+}
 </script>
 </body>
 </html>
