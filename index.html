@@ -59,7 +59,7 @@ function slideRun(el,offset){//动画运行
 var startX = 0,endX=0,slideX=0,startArray = [],endArray=[],
 	slideX0=0,slideX1=0,slideX2=0,direct,
 	isTouchEnd=true,isMove=false;
-document.ontouchstart = function(e){//手指触摸屏幕
+slideContainer[0].ontouchstart = function(e){//手指触摸屏幕
 	var e = e || window.e;
 	if(isTouchEnd && e.touches.length ==1){
 		startX = e.touches[0].pageX;
@@ -81,7 +81,7 @@ function getLeft(){//获取所有图片的当前偏移值
 	return leftArray;
 }
 
-document.ontouchmove = function(e){//手指在屏幕滑动
+slideContainer[0].ontouchmove = function(e){//手指在屏幕滑动
 	var e = e || window.e;
 	if(isTouchEnd){return};
 	// e.preventDefault();
@@ -138,7 +138,7 @@ function slideLeft(el,moveLeft,nowLeft){//手指滑动时，页面也跟随滑�
 	el.style.left = nowLeft + moveLeft + "px";
 }
 
-document.ontouchend = function(e){//手指离开屏幕
+slideContainer[0].ontouchend = function(e){//手指离开屏幕
 	var e = e || window.e;
 	if(isMove && !isTouchEnd){
 		changeLeft();
